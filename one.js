@@ -995,7 +995,7 @@ function generatePDFWithJSPDF(data) {
       doc.text(`System Type: ${data.systemType}`, 20, 130)
 
       // Try to load logo (left) and an optional app image (centered) as PNG data URLs.
-      const logoSrc = "images/logo.jpeg"
+      const logoSrc = "logo.jpeg"
       const appImageSrc = "images/service-booking-app.webp"
 
       function loadImageAsPngDataUrl(src) {
