@@ -994,10 +994,6 @@ function generatePDFWithJSPDF(data) {
       doc.text(`Brand: ${data.brand}`, 20, 123)
       doc.text(`System Type: ${data.systemType}`, 20, 130)
 
-      // Try to load logo (left) and an optional app image (centered) as PNG data URLs.
-      const logoSrc = "logo.jpeg"
-      const appImageSrc = "logo.jpeg"
-
       function loadImageAsPngDataUrl(src) {
         return new Promise((resolveImg, rejectImg) => {
           try {
