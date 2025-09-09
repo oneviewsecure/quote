@@ -958,7 +958,7 @@ function generatePDFWithJSPDF(data) {
   const branchDisplay = data.branchInfo || { address: "", phone: "" }
   if (branchDisplay.address) doc.text(branchDisplay.address, 105, 21, { align: "center" })
   if (branchDisplay.phone) doc.text(`Phone: ${branchDisplay.phone} | Email: sales@oneviewsecuretech.in`, 105, 27, { align: "center" })
-  doc.text("Website: www.oneviewsecuretech.in", 105, 33, { align: "center" })
+  doc.text("Website: www.oneviewsecure.in", 105, 33, { align: "center" })
 
       // Reset text color
       doc.setTextColor(0, 0, 0)
@@ -1175,7 +1175,7 @@ function generatePDFWithJSPDF(data) {
           doc.setFontSize(8)
           doc.setFont("helvetica", "normal")
           doc.setTextColor(102, 102, 102)
-          const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecuretech.in`
+          const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`
           doc.text(`For queries: ${contactLine}`, 105, 285, { align: "center" })
           doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: "center" })
         }
@@ -1197,7 +1197,7 @@ function generatePDFWithJSPDF(data) {
           doc.setFontSize(8)
           doc.setFont("helvetica", "normal")
           doc.setTextColor(102, 102, 102)
-          doc.text(`For queries: ${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecuretech.in`, 105, 285, {
+          doc.text(`For queries: ${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`, 105, 285, {
             align: "center",
           })
           doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: "center" })
@@ -1772,7 +1772,7 @@ KEY TERMS:
 CONTACT US:
 ${branchLine}
 📧 sales@oneviewsecuretech.in
-🌐 www.oneviewsecuretech.in
+🌐 www.oneviewsecure.in
 
 Best regards,
 One View Secure Technologies Team`
