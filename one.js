@@ -994,7 +994,10 @@ function generatePDFWithJSPDF(data) {
       doc.text(`Brand: ${data.brand}`, 20, 123)
       doc.text(`System Type: ${data.systemType}`, 20, 130)
 
-      function loadImageAsPngDataUrl(src) {
+      // Try to load logo (left) and an optional app image (centered) as PNG data URLs.
+  const logoSrc = "logo.jpeg"
+
+  function loadImageAsPngDataUrl(src) {
         return new Promise((resolveImg, rejectImg) => {
           try {
             const imgEl = new Image()
@@ -1025,13 +1028,6 @@ function generatePDFWithJSPDF(data) {
         console.warn("Could not load logo for PDF:", err)
         return null
       })
-
-      const appImagePromise = loadImageAsPngDataUrl(appImageSrc).catch((err) => {
-        console.warn("Could not load app image for PDF:", err)
-        return null
-      })
-
-      const imagesPromise = Promise.all([logoPromise, appImagePromise])
 
   // Table Header
       let yPos = 145
@@ -1143,12 +1139,12 @@ function generatePDFWithJSPDF(data) {
 
       // Footer will be added after potential image insertion
 
-      // Wait for both logo and app image to resolve, then draw them where available
-      imagesPromise.then(([logoDataUrl, appDataUrl]) => {
+      // Wait for logoPromise, draw logo only on the first page header if available, then add footer and resolve
+      logoPromise.then((logoDataUrl) => {
         try {
           const pageWidth = doc.internal.pageSize.getWidth()
 
-          // Draw logo on left of header (if available). Header height ~36; keep logo within 32x32 or scale preserving aspect.
+          // Draw logo only on page 1 header (if available)
           if (logoDataUrl) {
             try {
               const props = doc.getImageProperties(logoDataUrl)
@@ -1161,57 +1157,44 @@ function generatePDFWithJSPDF(data) {
               logoH = logoH * ratio
               const logoX = 14
               const logoY = 4
+              // Ensure we draw on the first page
+              doc.setPage(1)
               doc.addImage(logoDataUrl, "PNG", logoX, logoY, logoW, logoH)
             } catch (err) {
               console.warn("Could not draw logo into PDF:", err)
             }
           }
 
-          // Draw app image near the quotation number (if available)
-          if (appDataUrl) {
-            try {
-              const props = doc.getImageProperties(appDataUrl)
-              const maxImgWidth = 60
-              const imgW = Math.min(maxImgWidth, pageWidth - 130)
-              const imgH = (props.height * imgW) / props.width
-              const x = pageWidth - imgW - 14
-              const y = 60
-              doc.addImage(appDataUrl, "PNG", x, y, imgW, imgH)
-            } catch (err) {
-              console.warn("Could not draw app image into PDF:", err)
-            }
+          // Footer for each page
+          const pageCount = doc.internal.getNumberOfPages()
+          for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i)
+            // subtle divider line
+            doc.setDrawColor(220, 220, 220)
+            doc.setLineWidth(0.2)
+            doc.line(14, 274, pageWidth - 14, 274)
+
+            doc.setFontSize(10)
+            doc.setFont("helvetica", "bold")
+            doc.setTextColor(20, 33, 61)
+            doc.text("One View Secure Technologies", 20, 282)
+
+            doc.setFontSize(8)
+            doc.setFont("helvetica", "normal")
+            doc.setTextColor(102, 102, 102)
+            const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`
+            doc.text(`For queries: ${contactLine}`, 20, 287)
+            doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 287)
           }
         } catch (err) {
-          console.warn("Error while drawing images into PDF:", err)
-        }
-
-        // Footer for each page
-        const pageCount = doc.internal.getNumberOfPages()
-        for (let i = 1; i <= pageCount; i++) {
-          doc.setPage(i)
-          // subtle divider line
-          doc.setDrawColor(220, 220, 220)
-          doc.setLineWidth(0.2)
-          doc.line(14, 274, pageWidth - 14, 274)
-
-          doc.setFontSize(10)
-          doc.setFont("helvetica", "bold")
-          doc.setTextColor(20, 33, 61)
-          doc.text("One View Secure Technologies", 20, 282)
-
-          doc.setFontSize(8)
-          doc.setFont("helvetica", "normal")
-          doc.setTextColor(102, 102, 102)
-          const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`
-          doc.text(`For queries: ${contactLine}`, 20, 287)
-          doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 287)
+          console.warn("Error while drawing logo into PDF:", err)
         }
 
         // Convert to base64 and resolve
         pdfBase64 = doc.output("datauristring").split(",")[1]
         resolve(pdfBase64)
       }).catch((err) => {
-        console.warn("Unexpected error while handling image promises:", err)
+        console.warn("Unexpected error while handling logo promise:", err)
         try {
           const pageWidth = doc.internal.pageSize.getWidth()
           const pageCount = doc.internal.getNumberOfPages()
