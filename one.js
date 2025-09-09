@@ -938,158 +938,302 @@ function calculateAddonsCost(addons) {
 function generatePDFWithJSPDF(data) {
   return new Promise((resolve, reject) => {
     try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      const { jsPDF } = window.jspdf
+      const doc = new jsPDF()
 
-      // COLORS
-      const primaryColor = [0, 102, 204];
-      const lightGray = [245, 245, 245];
+  // Set font
+  doc.setFont("helvetica")
 
-      // HEADER band
-      doc.setFillColor(...primaryColor);
-      doc.rect(0, 0, 210, 30, "F");
+  // Clean header background
+  doc.setFillColor(245, 247, 250)
+  doc.rect(0, 0, 210, 36, "F")
 
-      // Add Logo (40x40 px, left side)
-      const img = new Image();
-      img.src = "logo.jpeg";
-      img.onload = function() {
-        doc.addImage(img, "JPEG", 10, 5, 20, 20);
+  // Prepare branch display and company text (logo will be drawn to left when available)
+  const branchDisplay = data.branchInfo || { address: "", phone: "" }
 
-        // Company name & tagline (right side)
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("One View Secure Technologies", 200, 15, { align: "right" });
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
-        doc.text("Your Vision, Our Protection", 200, 22, { align: "right" });
+  // Company title (left-aligned to leave space for logo on the left)
+  doc.setTextColor(20, 33, 61)
+  doc.setFontSize(16)
+  doc.setFont("helvetica", "bold")
+  doc.text("One View Secure Technologies", 50, 14, { align: "left" })
 
-        // Quotation Info Block
-        const currentDate = new Date().toLocaleDateString("en-IN");
-        const quotationNumber = `QT${Date.now().toString().slice(-6)}`;
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Quotation #: ${quotationNumber}`, 150, 35);
-        doc.text(`Date: ${currentDate}`, 150, 42);
+  // Contact / branch lines under company title
+  doc.setFontSize(9)
+  doc.setFont("helvetica", "normal")
+  if (branchDisplay.name) doc.text(branchDisplay.name, 50, 20, { align: "left" })
+  if (branchDisplay.address) doc.text(branchDisplay.address, 50, 25, { align: "left" })
+  const contactLineTop = `${branchDisplay.phone ? 'Phone: ' + branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in`
+  doc.text(contactLineTop, 50, 30, { align: "left" })
 
-        // Customer Details Box
-        let y = 50;
-        doc.setFillColor(...lightGray);
-        doc.roundedRect(14, y, 182, 35, 3, 3, "F");
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.text("Customer Details", 18, y + 7);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text(`Name: ${data.customerName || ""}`, 18, y + 14);
-        doc.text(`Mobile: ${data.customerMobile || ""}`, 18, y + 20);
-        doc.text(`Email: ${data.customerEmail || "N/A"}`, 18, y + 26);
-        doc.text(`Address: ${data.customerAddress || "N/A"}`, 18, y + 32);
+  // Reset text color to default for body
+  doc.setTextColor(0, 0, 0)
 
-        // Items Table Header
-        y += 50;
-        doc.setFillColor(...primaryColor);
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.rect(14, y - 5, 182, 8, "F");
-        doc.text("Item", 18, y);
-        doc.text("Qty", 110, y);
-        doc.text("Price", 140, y);
-        doc.text("Amount", 170, y);
+  // Quotation Title and Date (centered below header)
+  doc.setFontSize(16)
+  doc.setFont("helvetica", "bold")
+  doc.text("QUOTATION", 105, 55, { align: "center" })
 
-        // Table Rows
-        doc.setTextColor(0, 0, 0);
-        doc.setFont("helvetica", "normal");
-        y += 10;
-        data.items.forEach((item, i) => {
-          if (y > 250) {
-            doc.addPage();
-            y = 20;
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "normal")
+      const currentDate = new Date().toLocaleDateString("en-IN")
+      const quotationNumber = `QT${Date.now().toString().slice(-6)}`
+      doc.text(`Date: ${currentDate}`, 150, 65)
+      doc.text(`Quotation #: ${quotationNumber}`, 150, 70)
+
+  // Customer Details
+      doc.setFontSize(12)
+      doc.setFont("helvetica", "bold")
+      doc.text("Customer Details:", 20, 85)
+
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "normal")
+      doc.text(`Customer: ${data.customerName}`, 20, 95)
+      doc.text(`Mobile: ${data.customerMobile}`, 20, 102)
+      doc.text(`Email: ${data.customerEmail || "N/A"}`, 20, 109)
+      doc.text(`Address: ${data.customerAddress || "N/A"}`, 20, 116)
+      doc.text(`Brand: ${data.brand}`, 20, 123)
+      doc.text(`System Type: ${data.systemType}`, 20, 130)
+
+      // Try to load logo (left) and an optional app image (centered) as PNG data URLs.
+      const logoSrc = "images/logo.jpeg"
+      const appImageSrc = "images/service-booking-app.webp"
+
+      function loadImageAsPngDataUrl(src) {
+        return new Promise((resolveImg, rejectImg) => {
+          try {
+            const imgEl = new Image()
+            imgEl.crossOrigin = "anonymous"
+            imgEl.onload = () => {
+              try {
+                const canvas = document.createElement("canvas")
+                canvas.width = imgEl.naturalWidth
+                canvas.height = imgEl.naturalHeight
+                const ctx = canvas.getContext("2d")
+                ctx.drawImage(imgEl, 0, 0)
+                const pngDataUrl = canvas.toDataURL("image/png")
+                resolveImg(pngDataUrl)
+              } catch (err) {
+                rejectImg(err)
+              }
+            }
+            imgEl.onerror = () => rejectImg(new Error("Failed to load image: " + src))
+            imgEl.src = src
+          } catch (err) {
+            rejectImg(err)
           }
-          if (i % 2 === 0) {
-            doc.setFillColor(...lightGray);
-            doc.rect(14, y - 5, 182, 8, "F");
-          }
-          doc.text(item.name, 18, y);
-          doc.text(String(item.qty), 112, y, { align: "right" });
-          doc.text(`₹${(item.price || 0).toFixed(2)}`, 150, y, { align: "right" });
-          doc.text(`₹${(item.amount || 0).toFixed(2)}`, 190, y, { align: "right" });
-          y += 8;
-        });
+        })
+      }
 
-        // Summary Box
-        y += 10;
-        doc.setFillColor(255, 255, 255);
-        doc.roundedRect(120, y, 76, 28, 3, 3, "S");
-        doc.setFont("helvetica", "normal");
-        doc.text("Subtotal:", 124, y + 7);
-        doc.text("Discount:", 124, y + 14);
-        doc.setFont("helvetica", "bold");
-        doc.text("Grand Total:", 124, y + 22);
-
-        const subtotal = data.items.reduce((s, it) => s + (it.amount || 0), 0);
-        doc.setFont("helvetica", "normal");
-        doc.text(`₹${subtotal.toFixed(2)}`, 190, y + 7, { align: "right" });
-        doc.text(`₹${(data.discount || 0).toFixed(2)}`, 190, y + 14, { align: "right" });
-        doc.setFont("helvetica", "bold");
-        doc.text(`₹${(data.grandTotal || subtotal).toFixed(2)}`, 190, y + 22, { align: "right" });
-
-        // Terms & Conditions
-        y += 40;
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.text("Terms & Conditions:", 14, y);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        const terms = data.terms || [];
-        let ty = y + 6;
-        terms.forEach((t) => {
-          doc.text(`- ${t}`, 18, ty, { maxWidth: 178 });
-          ty += 5;
-          if (ty > 270) {
-            doc.addPage();
-            ty = 20;
-          }
-        });
-
-        // Footer
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.text("Thank you for choosing One View Secure Technologies", 105, 290, { align: "center" });
-        doc.text("Website: www.oneviewsecure.in", 105, 296, { align: "center" });
-
-        const pdfData = doc.output("datauristring");
-        resolve(pdfData);
-      };
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-        // Convert to base64
-        pdfBase64 = doc.output("datauristring").split(",")[1]
-        resolve(pdfBase64)
+      // Attempt to load both images concurrently; failures are tolerated
+      const logoPromise = loadImageAsPngDataUrl(logoSrc).catch((err) => {
+        console.warn("Could not load logo for PDF:", err)
+        return null
       })
-      .catch((err) => {
-        // shouldn't happen due to catch above, but handle defensively
-        console.warn("Unexpected error while handling image promise:", err)
+
+      const appImagePromise = loadImageAsPngDataUrl(appImageSrc).catch((err) => {
+        console.warn("Could not load app image for PDF:", err)
+        return null
+      })
+
+      const imagesPromise = Promise.all([logoPromise, appImagePromise])
+
+  // Table Header
+      let yPos = 145
+      doc.setFillColor(0, 102, 204)
+      doc.rect(20, yPos - 5, 170, 10, "F")
+
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "bold")
+      doc.text("Item", 25, yPos)
+      doc.text("Qty", 120, yPos)
+      doc.text("Price (INR)", 140, yPos)
+      doc.text("Amount (INR)", 165, yPos)
+
+      // Reset text color
+      doc.setTextColor(0, 0, 0)
+      doc.setFont("helvetica", "normal")
+
+      // Table Rows
+      yPos += 10
+      data.items.forEach((item, index) => {
+        // Check if we need a new page
+        if (yPos > 250) {
+          doc.addPage()
+          yPos = 20
+
+          // Add table header on new page
+          doc.setFillColor(0, 102, 204)
+          doc.rect(20, yPos - 5, 170, 10, "F")
+          doc.setTextColor(255, 255, 255)
+          doc.setFont("helvetica", "bold")
+          doc.text("Item", 25, yPos)
+          doc.text("Qty", 120, yPos)
+          doc.text("Price (INR)", 140, yPos)
+          doc.text("Amount (INR)", 165, yPos)
+          doc.setTextColor(0, 0, 0)
+          doc.setFont("helvetica", "normal")
+          yPos += 10
+        }
+
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.setFillColor(248, 249, 250)
+          doc.rect(20, yPos - 5, 170, 8, "F")
+        }
+
+        // Truncate long item names
+        let itemName = item.name
+        if (itemName.length > 35) {
+          itemName = itemName.substring(0, 32) + "..."
+        }
+
+        doc.text(itemName, 25, yPos)
+        doc.text(item.qty.toString(), 120, yPos)
+        doc.text(item.price.toFixed(2), 140, yPos)
+        doc.text(item.amount.toFixed(2), 165, yPos)
+        yPos += 8
+      })
+
+      // Discount Row
+      if (data.discount > 0) {
+        doc.setFillColor(255, 230, 230)
+        doc.rect(20, yPos - 5, 170, 8, "F")
+        doc.setTextColor(211, 47, 47)
+        doc.setFont("helvetica", "bold")
+        doc.text(`Discount (${(data.discountRate * 100).toFixed(1)}%)`, 25, yPos)
+        doc.text(`-${data.discount.toFixed(2)}`, 165, yPos)
+        doc.setTextColor(0, 0, 0)
+        doc.setFont("helvetica", "normal")
+        yPos += 8
+      }
+
+      // Grand Total Row
+      doc.setFillColor(227, 242, 253)
+      doc.rect(20, yPos - 5, 170, 12, "F")
+      doc.setTextColor(25, 118, 210)
+      doc.setFontSize(12)
+      doc.setFont("helvetica", "bold")
+      doc.text("GRAND TOTAL", 25, yPos + 3)
+      doc.text(data.grandTotal.toFixed(2), 165, yPos + 3)
+
+      yPos += 20
+
+      // Terms & Conditions
+      if (yPos > 220) {
+        doc.addPage()
+        yPos = 20
+      }
+
+      doc.setTextColor(0, 0, 0)
+      doc.setFontSize(12)
+      doc.setFont("helvetica", "bold")
+      doc.text("Terms & Conditions:", 20, yPos)
+      yPos += 10
+
+      doc.setFontSize(9)
+      doc.setFont("helvetica", "normal")
+      data.terms.forEach((term, index) => {
+        if (yPos > 270) {
+          doc.addPage()
+          yPos = 20
+        }
+
+        const termText = `${index + 1}. ${term}`
+        const lines = doc.splitTextToSize(termText, 170)
+        doc.text(lines, 20, yPos)
+        yPos += lines.length * 4 + 2
+      })
+
+      // Footer will be added after potential image insertion
+
+      // Wait for both logo and app image to resolve, then draw them where available
+      imagesPromise.then(([logoDataUrl, appDataUrl]) => {
+        try {
+          const pageWidth = doc.internal.pageSize.getWidth()
+
+          // Draw logo on left of header (if available). Header height ~36; keep logo within 32x32 or scale preserving aspect.
+          if (logoDataUrl) {
+            try {
+              const props = doc.getImageProperties(logoDataUrl)
+              const maxLogoW = 32
+              const maxLogoH = 32
+              let logoW = props.width
+              let logoH = props.height
+              const ratio = Math.min(maxLogoW / logoW, maxLogoH / logoH, 1)
+              logoW = logoW * ratio
+              logoH = logoH * ratio
+              const logoX = 14
+              const logoY = 4
+              doc.addImage(logoDataUrl, "PNG", logoX, logoY, logoW, logoH)
+            } catch (err) {
+              console.warn("Could not draw logo into PDF:", err)
+            }
+          }
+
+          // Draw app image near the quotation number (if available)
+          if (appDataUrl) {
+            try {
+              const props = doc.getImageProperties(appDataUrl)
+              const maxImgWidth = 60
+              const imgW = Math.min(maxImgWidth, pageWidth - 130)
+              const imgH = (props.height * imgW) / props.width
+              const x = pageWidth - imgW - 14
+              const y = 60
+              doc.addImage(appDataUrl, "PNG", x, y, imgW, imgH)
+            } catch (err) {
+              console.warn("Could not draw app image into PDF:", err)
+            }
+          }
+        } catch (err) {
+          console.warn("Error while drawing images into PDF:", err)
+        }
+
+        // Footer for each page
         const pageCount = doc.internal.getNumberOfPages()
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i)
+          // subtle divider line
+          doc.setDrawColor(220, 220, 220)
+          doc.setLineWidth(0.2)
+          doc.line(14, 274, pageWidth - 14, 274)
+
           doc.setFontSize(10)
           doc.setFont("helvetica", "bold")
-          doc.setTextColor(0, 102, 204)
-          doc.text("Thank you for choosing One View Secure Technologies!", 105, 280, { align: "center" })
+          doc.setTextColor(20, 33, 61)
+          doc.text("One View Secure Technologies", 20, 282)
+
           doc.setFontSize(8)
           doc.setFont("helvetica", "normal")
           doc.setTextColor(102, 102, 102)
-          doc.text(`For queries: ${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`, 105, 285, {
-            align: "center",
-          })
-          doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: "center" })
+          const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`
+          doc.text(`For queries: ${contactLine}`, 20, 287)
+          doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 287)
+        }
+
+        // Convert to base64 and resolve
+        pdfBase64 = doc.output("datauristring").split(",")[1]
+        resolve(pdfBase64)
+      }).catch((err) => {
+        console.warn("Unexpected error while handling image promises:", err)
+        try {
+          const pageWidth = doc.internal.pageSize.getWidth()
+          const pageCount = doc.internal.getNumberOfPages()
+          for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i)
+            doc.setFontSize(10)
+            doc.setFont("helvetica", "bold")
+            doc.setTextColor(20, 33, 61)
+            doc.text("One View Secure Technologies", 20, 282)
+            doc.setFontSize(8)
+            doc.setFont("helvetica", "normal")
+            doc.setTextColor(102, 102, 102)
+            const contactLine = `${branchDisplay && branchDisplay.phone ? branchDisplay.phone + ' | ' : ''}sales@oneviewsecuretech.in | www.oneviewsecure.in`
+            doc.text(`For queries: ${contactLine}`, 20, 287)
+            doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, 287)
+          }
+        } catch (err2) {
+          console.warn("Failed to draw fallback footer:", err2)
         }
         pdfBase64 = doc.output("datauristring").split(",")[1]
         resolve(pdfBase64)
