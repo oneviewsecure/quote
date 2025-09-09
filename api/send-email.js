@@ -79,12 +79,12 @@ export default async function handler(req, res) {
 
     // Prepare Brevo payload
     const brevoPayload = {
-      sender: { email: "no-reply@eyetechsecurities.in", name: "AK Infotech" },
+      sender: { email: "no-reply@eyetechsecurities.in", name: "OneView Secure Technologies" },
       to: [
-        { email: "sales@eyetechsecurities.in", name: "Sales" },
+        { email: "oneviewsecuretech@gmail.com", name: "Sales" },
         // include customer email as CC recipient if provided
       ],
-      subject: `AK Infotech New Quotation - ${customerName || "Customer"}`,
+      subject: `OneView Secure New Quotation - ${customerName || "Customer"}`,
       htmlContent,
     }
 
