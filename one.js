@@ -1357,7 +1357,7 @@ async function generateQuotation() {
     recordingDeviceCost = defaultRecordingDevice.cost
     powerDeviceCost = defaultPowerDevice.cost
 
-    const cableCostPerMeter = systemType === "Analog" ? 50 : 60
+    const cableCostPerMeter = systemType === "Analog" ? 60 : 60
     cablingCost = totalCableLength * cableCostPerMeter
 
     let connectorName, boxName
