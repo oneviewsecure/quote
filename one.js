@@ -1595,7 +1595,7 @@ async function updateQuotation() {
   }
 
   if (cableIndex !== -1) {
-    const cableCostPerMeter = systemType === "Analog" ? 50 : 60
+    const cableCostPerMeter = systemType === "Analog" ? 60 : 60
     const cablingCost = totalCableLength * cableCostPerMeter
 
     quotationData.items[cableIndex].qty = totalCableLength
