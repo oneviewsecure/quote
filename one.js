@@ -1364,9 +1364,9 @@ async function generateQuotation() {
 
     if (systemType === "Analog") {
       connectorName = "Connectors"
-      connectorCost = cameraCount * 150
+      connectorCost = cameraCount * 250
       boxName = "PVC Box"
-      boxCost = cameraCount * 50
+      boxCost = cameraCount * 100
     } else {
       connectorName = "D-Link RJ45 Jack"
       connectorCost = cameraCount * 50
