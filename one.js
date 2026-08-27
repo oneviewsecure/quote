@@ -157,12 +157,12 @@ const dvrOptions = [
   { name: "4CH DVR", channels: 4, supports: ["2MP"], cost: 3900 },
   { name: "8CH DVR", channels: 8, supports: ["2MP"], cost: 4900 },
   { name: "16CH DVR", channels: 16, supports: ["2MP"], cost: 9800 },
-  { name: "5MP Supported 4CH DVR", channels: 4, supports: ["2MP", "5MP"], cost: 5900 },
-  { name: "5MP Supported 8CH DVR", channels: 8, supports: ["2MP", "5MP"], cost: 6900 },
-  { name: "5MP Supported 16CH DVR", channels: 16, supports: ["2MP", "5MP"], cost: 13500 },
-  { name: "5MP Real 4CH DVR", channels: 4, supports: ["2MP", "5MP", "8MP"], cost: 7900 },
-  { name: "5MP Real 8CH DVR", channels: 8, supports: ["2MP", "5MP", "8MP"], cost: 12500 },
-  { name: "5MP Real 16CH DVR", channels: 16, supports: ["2MP", "5MP", "8MP"], cost: 19500 },
+  { name: "5MP Supported 4CH DVR", channels: 4, supports: ["2MP", "5MP"], cost: 7800 },
+  { name: "5MP Supported 8CH DVR", channels: 8, supports: ["2MP", "5MP"], cost: 9800 },
+  { name: "5MP Supported 16CH DVR", channels: 16, supports: ["2MP", "5MP"], cost: 17500 },
+  { name: "5MP Real 4CH DVR", channels: 4, supports: ["2MP", "5MP", "8MP"], cost: 9800 },
+  { name: "5MP Real 8CH DVR", channels: 8, supports: ["2MP", "5MP", "8MP"], cost: 14500 },
+  { name: "5MP Real 16CH DVR", channels: 16, supports: ["2MP", "5MP", "8MP"], cost: 21500 },
 ]
 
 const nvrOptions = [
@@ -172,8 +172,8 @@ const nvrOptions = [
 ]
 
 const smpsOptions = [
-  { name: "Fyber 4CH SMPS", channels: 4, cost: 900 },
-  { name: "Fyber 8CH SMPS", channels: 8, cost: 1200 },
+  { name: "Fyber 4CH SMPS", channels: 4, cost: 1200 },
+  { name: "Fyber 8CH SMPS", channels: 8, cost: 1400 },
   { name: "Fyber 16CH SMPS", channels: 16, cost: 1800 },
 ]
 
