@@ -1093,7 +1093,7 @@ function generatePDFWithJSPDF(data) {
         doc.rect(20, yPos - 5, 170, 8, "F")
         doc.setTextColor(211, 47, 47)
         doc.setFont("helvetica", "bold")
-        doc.text(`Discount (${(data.discountRate * 100).toFixed(1)}%)`, 25, yPos)
+        doc.text("Discount", 25, yPos)
         doc.text(`-${data.discount.toFixed(2)}`, 165, yPos)
         doc.setTextColor(0, 0, 0)
         doc.setFont("helvetica", "normal")
